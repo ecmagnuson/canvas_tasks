@@ -3,30 +3,29 @@ from os.path import dirname, abspath
 import os
 import shutil
 
-def read_student_list() -> Lst[str]:
-    students = []
+def get_students():
+    '''
+    Returns a list of the students (format 'lastnamefirstname') from student.txt
+    after removing upper case, commas, and the middle name from each student
+    e.g. smithjohn
+    '''
     with open('students.txt', 'r') as f:
-        for line in f.readlines():
-            students.append(line)
+        students = f.readlines()
+        for i, student in enumerate(students):
+            try:
+                students[i] = students[i].replace(',', '').strip().lower()
+                students[i] = (students[i])[ : students[i].index(' ')] #remove middle name
+            except ValueError:
+                pass
     return students
 
-def get_student_lastname() -> Lst[str]:
-    students = read_student_list()
-    student_lastnames = []
-    for student in students:
-        student_lastnames.append(student[ : student.index(',')].lower())
-    return student_lastnames
-
 def extract_submission():
-    source = dirname(abspath(__file__)) + '/submissions/'
+    submissions = dirname(abspath(__file__)) + '/submissions/'
     destination = dirname(abspath(__file__)) + '/wanted_submissions/'
-    directory_in_str = dirname(dirname(abspath(__file__)) + '/submissions/')
-    students = get_student_lastname()
-    for file in os.listdir(directory_in_str):
-        for student in students:
+    for file in os.listdir(submissions):
+        for student in get_students():
             if student in file:
-                shutil.copyfile(source + file, destination + file)
-    return 'files added :D'
+                shutil.copyfile(submissions + file, destination + file)
 
 if __name__ == '__main__':
     extract_submission()
