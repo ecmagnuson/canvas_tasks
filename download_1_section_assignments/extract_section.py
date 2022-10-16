@@ -4,6 +4,7 @@ from __future__ import annotations
 from os.path import dirname, abspath
 import os
 import shutil
+import sys
 
 '''
 reads the students from students.txt and extracts their assignments from
@@ -16,6 +17,7 @@ def get_students() -> Lst[str]:
     after removing upper case, commas, and the middle name from each student
     e.g. smithjohn
     '''
+    #print(dirname(abspath(__file__)) + '/submissions/')
     with open('students.txt', 'r') as f:
         students = f.readlines()
         for i, student in enumerate(students):
@@ -26,13 +28,18 @@ def get_students() -> Lst[str]:
                 pass
     return students
 
+
+
 def make_dir(dir: str) -> None:
     '''
-    Makes the directory if it doesnt exist 
+    Makes the directory if it doesnt exist. Raises error if the directory is already populated 
     dir -- directory we want to make
     '''
     if os.path.isdir(dir):
-        pass
+        student_files = os.listdir(dir)
+        if 'ProposalPaperGraded' in student_files[0]:
+            print("You've already extracted the files. Check the 'wanted_submissions' directory.")
+            sys.exit(1)
     else:
         os.mkdir(dir)
 
