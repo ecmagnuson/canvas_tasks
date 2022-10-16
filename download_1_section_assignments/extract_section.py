@@ -33,13 +33,15 @@ def make_dir(dir: str) -> None:
     else:
         os.mkdir(dir)
 
+def get_extension(file: str):
+    return file[file.index('.') : ]
+
 def rename_files():
     submissions = dirname(abspath(__file__)) + '/wanted_submissions/'
     student_files = os.listdir(submissions)
-
     for file in student_files:
         old_file = os.path.join(submissions, file)
-        new_file = os.path.join(submissions, file[ : file.index('_')] + 'ProposalPaperGraded')
+        new_file = os.path.join(submissions, file[ : file.index('_')] + 'ProposalPaperGraded' + get_extension(file))
         os.rename(old_file, new_file)
 
 def extract_submissions() -> None:
@@ -64,5 +66,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-    
-    
