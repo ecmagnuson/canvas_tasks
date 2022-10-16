@@ -33,10 +33,12 @@ def make_dir(dir: str) -> None:
     else:
         os.mkdir(dir)
 
-def get_extension(file: str):
+def get_extension(file: str) -> str:
+    '''returns the file extension of a file'''
     return file[file.index('.') : ]
 
-def rename_files():
+def rename_files() -> None:
+    '''renames the files in wanted_submissions dir to just name plus assignment name '''
     submissions = dirname(abspath(__file__)) + '/wanted_submissions/'
     student_files = os.listdir(submissions)
     for file in student_files:
@@ -61,6 +63,8 @@ def extract_submissions() -> None:
                 shutil.copyfile(submissions + sfile, destination + sfile)
 
 def main():
+
+    
     extract_submissions()
     rename_files()
 
