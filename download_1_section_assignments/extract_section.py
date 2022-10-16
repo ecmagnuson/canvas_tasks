@@ -27,46 +27,53 @@ def get_students() -> Lst[str]:
     return students
 
 def make_dir(dir: str) -> None:
-    '''Makes the directory if it doesnt exist '''
+    '''
+    Makes the directory if it doesnt exist 
+    dir -- directory we want to make
+    '''
     if os.path.isdir(dir):
         pass
     else:
         os.mkdir(dir)
 
 def get_extension(file: str) -> str:
-    '''returns the file extension of a file'''
+    '''
+    returns the file extension of a file
+    file -- str representation of the file path
+    '''
     return file[file.index('.') : ]
 
-def rename_files() -> None:
-    '''renames the files in wanted_submissions dir to just name plus assignment name '''
-    submissions = dirname(abspath(__file__)) + '/wanted_submissions/'
-    student_files = os.listdir(submissions)
+def rename_files(wanted_dir: str) -> None:
+    '''
+    renames the files in wanted_submissions dir to just name plus assignment name 
+    wanted_dir -- str path to dir were only students we want assignments from
+    '''
+    student_files = os.listdir(wanted_dir)
     for file in student_files:
-        old_file = os.path.join(submissions, file)
-        new_file = os.path.join(submissions, file[ : file.index('_')] + 'ProposalPaperGraded' + get_extension(file))
+        old_file = os.path.join(wanted_dir, file)
+        new_file = os.path.join(wanted_dir, file[ : file.index('_')] + 'ProposalPaperGraded' + get_extension(file))
         os.rename(old_file, new_file)
 
-def extract_submissions() -> None:
+def extract_submissions(submissions: str, wanted_dir:str) -> None:
     '''
     extracts all of the files from the submissions directory to a new directory 
     called 'wanted_submissions'
+    submissions -- str path to all student submissions
+    wanted_dir -- str path to dir were only students we want assignments from
     '''
-    submissions = dirname(abspath(__file__)) + '/submissions/'
-    destination = dirname(abspath(__file__)) + '/wanted_submissions/'
     student_files = os.listdir(submissions)
-    students = get_students()
-    make_dir(destination)
-
     for i, sfile in enumerate(student_files):
-        for student in students:
+        for student in get_students():
             if student in sfile:
-                shutil.copyfile(submissions + sfile, destination + sfile)
+                shutil.copyfile(submissions + sfile, wanted_dir + sfile)
 
-def main():
+def main():    
+    submissions = dirname(abspath(__file__)) + '/submissions/'
+    wanted_dir = dirname(abspath(__file__)) + '/wanted_submissions/'
 
-    
-    extract_submissions()
-    rename_files()
+    make_dir(wanted_dir)
+    extract_submissions(submissions, wanted_dir)
+    rename_files(wanted_dir)
 
 if __name__ == '__main__':
     main()
