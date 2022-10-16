@@ -17,8 +17,7 @@ def get_students() -> Lst[str]:
     after removing upper case, commas, and the middle name from each student
     e.g. smithjohn
     '''
-    #print(dirname(abspath(__file__)) + '/submissions/')
-    with open('students.txt', 'r') as f:
+    with open(dirname(abspath(__file__)) + '/students.txt', 'r') as f:
         students = f.readlines()
         for i, student in enumerate(students):
             try:
@@ -27,8 +26,6 @@ def get_students() -> Lst[str]:
             except ValueError:
                 pass
     return students
-
-
 
 def make_dir(dir: str) -> None:
     '''
