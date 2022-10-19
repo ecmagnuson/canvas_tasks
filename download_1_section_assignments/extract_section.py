@@ -10,6 +10,7 @@ import sys
 reads the students from students.txt and extracts their assignments from
 the submissions directory into the wanted_submissions directory.
 '''
+        
 
 def get_students() -> Lst[str]:
     '''
@@ -17,7 +18,7 @@ def get_students() -> Lst[str]:
     after removing upper case, commas, and the middle name from each student
     e.g. smithjohn
     '''
-    with open(dirname(abspath(__file__)) + '/students.txt', 'r') as f:
+    with open(check_using_pyinstaller() + '/students.txt', 'r') as f:
         students = f.readlines()
         for i, student in enumerate(students):
             try:
@@ -66,14 +67,23 @@ def extract_submissions(submissions: str, wanted_dir:str) -> None:
     wanted_dir -- str path to dir were only students we want assignments from
     '''
     student_files = os.listdir(submissions)
+    
     for i, sfile in enumerate(student_files):
         for student in get_students():
             if student in sfile:
                 shutil.copyfile(submissions + sfile, wanted_dir + sfile)
 
+def check_using_pyinstaller():
+    if getattr(sys, 'frozen', False):
+        print('Using PyInstaller executable.')
+        application_path = os.path.dirname(sys.executable)
+        return application_path
+    return os.path.dirname(os.path.abspath(__file__))
+
 def main():    
-    submissions = dirname(abspath(__file__)) + '/submissions/'
-    wanted_dir = dirname(abspath(__file__)) + '/wanted_submissions/'
+    script_location = check_using_pyinstaller()
+    submissions = script_location + '/submissions/'
+    wanted_dir = script_location + '/wanted_submissions/'
 
     make_dir(wanted_dir)
     extract_submissions(submissions, wanted_dir)
@@ -81,3 +91,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+#check if it makes the wanted dir but the wanted dir is empty it will raise error
