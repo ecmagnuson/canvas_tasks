@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-// makeDir creates a directory given string path
+// makeDir creates a directory given relative string path
 func makeDir(dirname string) {
 	dir := filepath.Join(".", dirname)
 	err := os.MkdirAll(dir, os.ModePerm)
@@ -22,10 +22,9 @@ func makeDir(dirname string) {
 	}
 }
 
-// readStudents returns a list of students from students.txt after removing commas and uppercase
+// readStudents returns a slice of students from students.txt after removing commas and uppercase letters
 func readStudents() []string {
 	var students []string
-
 	file, err := os.Open("../resources/students.txt")
 	if err != nil {
 		logError(err.Error())
@@ -48,7 +47,7 @@ func readStudents() []string {
 	return students
 }
 
-// readSubmissions returns a slice of FileInfo data from submissions dir
+// readSubmissions returns a slice of all filenames from submissions directory
 func readSubmissions() []string {
 	var submissions []string
 	files, err := os.ReadDir("../resources/submissions")
@@ -92,7 +91,11 @@ func copyFile(src, dst string) {
 	err = out.Sync()
 }
 
-func recursiveZip(pathToZip, destinationPath string) {
+// recursiveZipSubmissions zips the output student submission files
+func recursiveZipSubmissions() {
+	pathToZip := "../output/submissions/"
+	destinationPath := "../output/submissions.7z"
+
 	destinationFile, err := os.Create(destinationPath)
 	if err != nil {
 		logError(err.Error())
@@ -141,19 +144,21 @@ func recursiveZip(pathToZip, destinationPath string) {
 // where it creates a directory of the student name and places the completed
 // assignment.
 func execute(assignment string) {
+
 	makeDir("../output/submissions")
+
 	var students []string = readStudents()
 	var submissions []string = readSubmissions()
 
 	group := 1
-
 	//naive and complicated way to do this, fix later
 	for _, student := range students {
 		for _, submission := range submissions {
 			studentName := strings.Split(submission, "_")[0]
-			if student == studentName {
+			if studentName == student {
 				extension := filepath.Ext(submission)
-				studentDir := "../output/submissions/" + "Group" + strconv.Itoa(group) + "/" + studentName
+				groupDir := "../output/submissions/" + "Group" + strconv.Itoa(group) + "/"
+				studentDir := groupDir + studentName
 				makeDir(studentDir)
 				copyFile("../resources/submissions/"+submission, studentDir+"/"+studentName+assignment+extension)
 				copyFile("../resources/TAComments", studentDir+"/"+studentName+"TAComments")
@@ -163,5 +168,5 @@ func execute(assignment string) {
 			group++
 		}
 	}
-	recursiveZip("../output/submissions/", "../output/submissions.7z")
+	recursiveZipSubmissions()
 }
