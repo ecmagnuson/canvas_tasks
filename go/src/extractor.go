@@ -4,10 +4,10 @@ import (
 	"archive/zip"
 	"bufio"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
 
@@ -51,7 +51,7 @@ func readStudents() []string {
 // readSubmissions returns a slice of FileInfo data from submissions dir
 func readSubmissions() []string {
 	var submissions []string
-	files, err := ioutil.ReadDir("../resources/submissions")
+	files, err := os.ReadDir("../resources/submissions")
 	if err != nil {
 		logError(err.Error())
 		log.Fatal(err)
@@ -145,17 +145,22 @@ func execute(assignment string) {
 	var students []string = readStudents()
 	var submissions []string = readSubmissions()
 
-	//naive way to do this, fix later
+	group := 1
+
+	//naive and complicated way to do this, fix later
 	for _, student := range students {
 		for _, submission := range submissions {
 			studentName := strings.Split(submission, "_")[0]
 			if student == studentName {
 				extension := filepath.Ext(submission)
-				studentDir := "../output/submissions/" + studentName
+				studentDir := "../output/submissions/" + "Group" + strconv.Itoa(group) + "/" + studentName
 				makeDir(studentDir)
 				copyFile("../resources/submissions/"+submission, studentDir+"/"+studentName+assignment+extension)
 				copyFile("../resources/TAComments", studentDir+"/"+studentName+"TAComments")
 			}
+		}
+		if student == "" || student == "\r" {
+			group++
 		}
 	}
 	recursiveZip("../output/submissions/", "../output/submissions.7z")
