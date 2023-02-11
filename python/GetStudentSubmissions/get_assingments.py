@@ -1,0 +1,137 @@
+#!/usr/bin/env python3
+
+import json
+import os
+import re
+import urllib.request
+from canvasapi import Canvas, requester
+from dataclasses import dataclass
+
+#TODO list docs
+
+@dataclass
+class Student:
+    name: str
+    ID: str
+
+def validate():
+    # return a new Canvas object
+    API_URL = "https://canvas.wisc.edu/" #TODO automate for any site
+    API_KEY = token()
+    return Canvas(API_URL, API_KEY)
+
+def token():
+    with open("token", "r") as f:
+        return f.readline()
+
+def active_canvas_courses(canvas):
+    #Returns a list of all active Canvas courses within desired semester
+    current = []
+    courses = canvas.get_courses()
+    for course in courses:
+        try:
+            # matches any two upper case letters with 2 numbers, i.e. FA22, SP23, etc.
+            match = re.search(r"[A-Z]{2}\d{2}", str(course))
+            if match is not None and match.group(0) == "SP23":  #TODO make this more automated for other semesters
+                current.append(course)
+            else:
+                raise AttributeError("It looks like you don't have any classes in the chosen semester``")
+        except AttributeError:
+            pass # weird issue with a course not having a name  
+    return current   
+
+def desired_course(canvas):
+    #return a Course object that the user picked
+    courses = active_canvas_courses(canvas)
+    print(f"There are {len(courses)} courses in your current semester Canvas page.")
+    print("Which would you like to choose?\n")
+    i = 0
+    for course in courses:
+        print(f"({i}) --" , course.name)
+        i += 1
+    try:
+        choice = int(input("> "))
+        return courses[choice]
+    except (ValueError, IndexError) as e:
+        print("Enter a digit corresponding to the course")
+
+def desired_section(course):
+    #return a Section object corresponding to the user input
+    print(f"What section of {course.name} do you want to get?")
+    sections = course.get_sections()
+    i = 0
+    for section in sections:
+        print(f"({i}) --" , section)
+        i += 1
+    try:
+        #TODO all sections?
+        choice = int(input("> "))
+        return sections[choice]
+    except (ValueError, IndexError) as e:
+        print("Enter a digit corresponding to the section")
+
+def get_published_assignments(course):
+    #TODO get year without name
+    #TODO embellish prompt
+    # lists out all of the published assignments for user input
+    assignments = course.get_assignments()
+    print("What assignment do you want to download the files for?")
+    i = 0
+    #TODO fix this bug with hidden assignments
+    for assignment in assignments:
+        if assignment.published:
+            print(f"({i}) --" , assignment.name)
+        i += 1
+    try:
+        choice = int(input("> "))
+        return assignments[choice]
+    except (ValueError, IndexError) as e:
+        print("Enter a digit corresponding to the published assignment.")
+
+def populate_enrollment(section):
+    # returns a list of Student objects (name, id) in the desired section
+    students = []
+    enrollments = section.get_enrollments()
+    # TODO only get students that are enrolled
+    for enrollment in enrollments:
+        if enrollment.role == "StudentEnrollment":
+            #print(enrollment.user_id)
+            name = enrollment.user["name"]
+            name = name.title().replace(" ", "")
+            ID = enrollment.user["id"]
+            students.append(Student(name, ID))
+    return students
+
+def download_assignments(students, assignment):
+    #downloads assignments into ./submissions directory
+    print("What do you want to call the name of the file for each student?")
+    name = input("> ")
+    i = 1
+    os.makedirs("./submissions", exist_ok=True)
+    os.makedirs("./submissions/" + name, exist_ok=True)
+    for student in students:
+        try:
+            file_name = str(assignment.get_submission(student.ID).attachments[0])
+            extension = file_name[file_name.index(".") : ]
+            submission_url = assignment.get_submission(student.ID).attachments[0].url
+            # TODO beautify name
+            urllib.request.urlretrieve(submission_url, f"./submissions/{name}/{student.name}_{name}_graded{extension}")
+            print(f"downloading file {i} of {len(students) - 1} submissions", end = "\r")
+            i += 1
+        except (IndexError, requester.ResourceDoesNotExist) as e:
+            #no submission or member of teaching team
+            pass
+
+def main():
+    canvas = validate()
+    course = desired_course(canvas)
+    section = desired_section(course)
+    students = populate_enrollment(section)
+    assignment = get_published_assignments(course)
+    download_assignments(students, assignment)
+    # TODO bug for students len because teachers 
+    # TODO fix tell where it is being downloaded
+    print(f"Finished :)")
+
+if __name__ == "__main__":
+    main()

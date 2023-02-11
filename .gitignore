@@ -1,3 +1,5 @@
 go/resources/*
-
 go/bin/*
+
+python/GetStudentSubmissions/token
+python/GetStudentSubmissions/submissions/*
