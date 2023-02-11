@@ -3,6 +3,7 @@
 import json
 import os
 import re
+import sys
 from dataclasses import dataclass
 from canvasapi import Canvas, requester
 import urllib.request
@@ -18,14 +19,17 @@ class Student:
     ID: str
 
 def validate():
-    # return a new Canvas object
-    API_URL = "https://canvas.wisc.edu/" #TODO automate for any site
-    API_KEY = token()
-    return Canvas(API_URL, API_KEY)
-
-def token():
-    with open("token", "r") as f:
-        return f.readline()
+    with open("data.json") as f:
+        d = json.load(f)
+    try:
+        API_URL = d["API_URL"]
+        API_KEY = d["API_KE"]
+        return Canvas(API_URL, API_KEY)
+    except KeyError:
+        print('There was an error accessing the API_URL or API_KEY inside of the "Auth.json" file')
+        print("Enter each inside of double quotes, i.e.")
+        print('"https://canvas.wisc.edu/"')
+        sys.exit(1)
 
 def desired_course(canvas):
     #return a Course object that the user picked
@@ -63,7 +67,6 @@ def desired_section(course):
     for i, section in enumerate(sections):
         print(f"({i}) --" , section)
     try:
-        #TODO all sections?
         choice = int(input("> "))
         return sections[choice]
     except (ValueError, IndexError) as e:
