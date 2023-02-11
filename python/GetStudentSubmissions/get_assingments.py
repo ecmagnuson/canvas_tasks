@@ -27,6 +27,21 @@ def token():
     with open("token", "r") as f:
         return f.readline()
 
+def desired_course(canvas):
+    #return a Course object that the user picked
+    courses = active_canvas_courses(canvas)
+    print(f"There are {len(courses)} courses in your current semester Canvas page.")
+    print("Which would you like to choose?\n")
+    i = 0
+    for course in courses:
+        print(f"({i}) --" , course.name)
+        i += 1
+    try:
+        choice = int(input("> "))
+        return courses[choice]
+    except (ValueError, IndexError) as e:
+        print("Enter a digit corresponding to the course")
+
 def active_canvas_courses(canvas):
     #Returns a list of all active Canvas courses within desired semester
     current = []
@@ -43,21 +58,6 @@ def active_canvas_courses(canvas):
             pass # weird issue with a course not having a name  
     return current   
 
-def desired_course(canvas):
-    #return a Course object that the user picked
-    courses = active_canvas_courses(canvas)
-    print(f"There are {len(courses)} courses in your current semester Canvas page.")
-    print("Which would you like to choose?\n")
-    i = 0
-    for course in courses:
-        print(f"({i}) --" , course.name)
-        i += 1
-    try:
-        choice = int(input("> "))
-        return courses[choice]
-    except (ValueError, IndexError) as e:
-        print("Enter a digit corresponding to the course")
-
 def desired_section(course):
     #return a Section object corresponding to the user input
     print(f"What section of {course.name} do you want to get?")
@@ -72,6 +72,20 @@ def desired_section(course):
         return sections[choice]
     except (ValueError, IndexError) as e:
         print("Enter a digit corresponding to the section")
+
+def populate_enrollment(section):
+    # returns a list of Student objects (name, id) in the desired section
+    students = []
+    enrollments = section.get_enrollments()
+    # TODO only get students that are enrolled
+    for enrollment in enrollments:
+        if enrollment.role == "StudentEnrollment":
+            #print(enrollment.user_id)
+            name = enrollment.user["name"]
+            name = name.title().replace(" ", "")
+            ID = enrollment.user["id"]
+            students.append(Student(name, ID))
+    return students
 
 def get_published_assignments(course):
     #TODO get year without name
@@ -90,20 +104,6 @@ def get_published_assignments(course):
         return assignments[choice]
     except (ValueError, IndexError) as e:
         print("Enter a digit corresponding to the published assignment.")
-
-def populate_enrollment(section):
-    # returns a list of Student objects (name, id) in the desired section
-    students = []
-    enrollments = section.get_enrollments()
-    # TODO only get students that are enrolled
-    for enrollment in enrollments:
-        if enrollment.role == "StudentEnrollment":
-            #print(enrollment.user_id)
-            name = enrollment.user["name"]
-            name = name.title().replace(" ", "")
-            ID = enrollment.user["id"]
-            students.append(Student(name, ID))
-    return students
 
 def download_assignments(students, assignment):
     #downloads assignments into ./submissions directory
