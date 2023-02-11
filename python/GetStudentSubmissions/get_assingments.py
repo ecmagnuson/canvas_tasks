@@ -3,11 +3,14 @@
 import json
 import os
 import re
-import urllib.request
-from canvasapi import Canvas, requester
 from dataclasses import dataclass
+from canvasapi import Canvas, requester
+import urllib.request
 
-#TODO list docs
+# Docs
+# https://canvasapi.readthedocs.io/en/stable/index.html
+# https://canvas.instructure.com/doc/api/index.html
+# https://github.com/ucfopen/canvasapi
 
 @dataclass
 class Student:
