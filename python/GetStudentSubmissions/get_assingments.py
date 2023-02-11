@@ -32,10 +32,8 @@ def desired_course(canvas):
     courses = active_canvas_courses(canvas)
     print(f"There are {len(courses)} courses in your current semester Canvas page.")
     print("Which would you like to choose?\n")
-    i = 0
-    for course in courses:
+    for i, course in enumerate(courses):
         print(f"({i}) --" , course.name)
-        i += 1
     try:
         choice = int(input("> "))
         return courses[choice]
@@ -62,10 +60,8 @@ def desired_section(course):
     #return a Section object corresponding to the user input
     print(f"What section of {course.name} do you want to get?")
     sections = course.get_sections()
-    i = 0
-    for section in sections:
+    for i, section in enumerate(sections):
         print(f"({i}) --" , section)
-        i += 1
     try:
         #TODO all sections?
         choice = int(input("> "))
@@ -93,12 +89,10 @@ def get_published_assignments(course):
     # lists out all of the published assignments for user input
     assignments = course.get_assignments()
     print("What assignment do you want to download the files for?")
-    i = 0
     #TODO fix this bug with hidden assignments
-    for assignment in assignments:
+    for i, assignment in enumerate(assignments):
         if assignment.published:
             print(f"({i}) --" , assignment.name)
-        i += 1
     try:
         choice = int(input("> "))
         return assignments[choice]
@@ -109,18 +103,17 @@ def download_assignments(students, assignment):
     #downloads assignments into ./submissions directory
     print("What do you want to call the name of the file for each student?")
     name = input("> ")
-    i = 1
     os.makedirs("./submissions", exist_ok=True)
     os.makedirs("./submissions/" + name, exist_ok=True)
-    for student in students:
+    for i, student in enumerate(students, 1):
         try:
             file_name = str(assignment.get_submission(student.ID).attachments[0])
             extension = file_name[file_name.index(".") : ]
             submission_url = assignment.get_submission(student.ID).attachments[0].url
             # TODO beautify name
             urllib.request.urlretrieve(submission_url, f"./submissions/{name}/{student.name}_{name}_graded{extension}")
+            #say if the number of submission is not the same as the acualy amout of people
             print(f"downloading file {i} of {len(students) - 1} submissions", end = "\r")
-            i += 1
         except (IndexError, requester.ResourceDoesNotExist) as e:
             #no submission or member of teaching team
             pass
