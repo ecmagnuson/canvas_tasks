@@ -91,12 +91,9 @@ def populate_enrollment(section):
     return students
 
 def get_published_assignments(course):
-    #TODO get year without name
-    #TODO embellish prompt
-    # lists out all of the published assignments for user input
+    #TODO this hangs for a bit
     assignments = course.get_assignments()
     print("What assignment do you want to download the files for?")
-    #TODO fix this bug with hidden assignments
     for i, assignment in enumerate(assignments):
         if assignment.published:
             print(f"({i}) --" , assignment.name)
@@ -109,21 +106,19 @@ def get_published_assignments(course):
 def download_assignments(students, assignment):
     #downloads assignments into ./submissions directory
     print("What do you want to call the name of the file for each student?")
-    name = input("> ")
+    assignment_name = input("> ")
     os.makedirs("./submissions", exist_ok=True)
-    os.makedirs("./submissions/" + name, exist_ok=True)
+    os.makedirs("./submissions/" + assignment_name, exist_ok=True)
     for i, student in enumerate(students, 1):
         try:
             file_name = str(assignment.get_submission(student.ID).attachments[0])
             extension = file_name[file_name.index(".") : ]
             submission_url = assignment.get_submission(student.ID).attachments[0].url
-            # TODO beautify name
-            urllib.request.urlretrieve(submission_url, f"./submissions/{name}/{student.name}_{name}_graded{extension}")
-            #say if the number of submission is not the same as the acualy amout of people
-            print(f"downloading file {i} of {len(students) - 1} submissions", end = "\r")
-        except (IndexError, requester.ResourceDoesNotExist) as e:
-            #no submission or member of teaching team
-            pass
+            urllib.request.urlretrieve(submission_url, f"./submissions/{assignment_name}/{student.name}_{assignment_name}_graded{extension}")
+            print(f"downloading submission {i}", end = "\r")
+        except (IndexError, requester.ResourceDoesNotExist):
+            print(f"No submission from {student.name}")
+    print(f"Files have been downloaded to submissions/{assignment_name}")
 
 def main():
     canvas = validate()
@@ -132,10 +127,6 @@ def main():
     students = populate_enrollment(section)
     assignment = get_published_assignments(course)
     download_assignments(students, assignment)
-    
-    # TODO bug for students len because teachers 
-    # TODO fix tell where it is being downloaded
-    print(f"Finished :)")
 
 if __name__ == "__main__":
     main()
