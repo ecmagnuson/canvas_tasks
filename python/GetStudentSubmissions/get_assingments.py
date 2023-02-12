@@ -2,21 +2,16 @@
 
 import json
 import os
-import re
 import sys
+import urllib.request
+
 from dataclasses import dataclass
 from canvasapi import Canvas, requester
-import urllib.request
 
 # Docs
 # https://canvasapi.readthedocs.io/en/stable/index.html
 # https://canvas.instructure.com/doc/api/index.html
 # https://github.com/ucfopen/canvasapi
-
-@dataclass
-class Student:
-    name: str
-    ID: str
 
 def validate():
     with open("Auth.json") as f:
@@ -79,6 +74,11 @@ def desired_section(course):
     except (ValueError, IndexError) as e:
         print("Enter a digit corresponding to the section")
 
+@dataclass
+class Student: 
+    name: str
+    ID: str
+
 def populate_enrollment(section):
     #return a list of Student objects (name, id) in the desired section
     students = []
@@ -129,4 +129,4 @@ def main():
     download_assignments(students, assignment)
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
