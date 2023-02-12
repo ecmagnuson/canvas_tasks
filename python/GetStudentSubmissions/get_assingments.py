@@ -56,6 +56,7 @@ def active_canvas_courses(canvas):
         try:
             #TODO this is pretty ugly, but ok for now..
             if ( 
+                # One enrollment is a list of one dict
                 course.enrollments[0]["enrollment_state"] == "active" 
                 and 
                 course.enrollments[0]["type"] in types
@@ -82,12 +83,9 @@ def populate_enrollment(section):
     #return a list of Student objects (name, id) in the desired section
     students = []
     enrollments = section.get_enrollments()
-    # TODO only get students that are enrolled
     for enrollment in enrollments:
         if enrollment.role == "StudentEnrollment":
-            #print(enrollment.user_id)
-            name = enrollment.user["name"]
-            name = name.title().replace(" ", "")
+            name = enrollment.user["name"].title().replace(" ", "")
             ID = enrollment.user["id"]
             students.append(Student(name, ID))
     return students
