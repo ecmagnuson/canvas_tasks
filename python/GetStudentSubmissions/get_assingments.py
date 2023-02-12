@@ -39,7 +39,7 @@ def desired_course(canvas):
     try:
         choice = int(input("> "))
         return courses[choice]
-    except (ValueError, IndexError) as e:
+    except (ValueError, IndexError):
         print("Enter a digit corresponding to the course")
 
 def active_canvas_courses(canvas):
@@ -71,7 +71,7 @@ def desired_section(course):
     try:
         choice = int(input("> "))
         return sections[choice]
-    except (ValueError, IndexError) as e:
+    except (ValueError, IndexError):
         print("Enter a digit corresponding to the section")
 
 @dataclass
@@ -100,7 +100,7 @@ def get_published_assignments(course):
     try:
         choice = int(input("> "))
         return assignments[choice]
-    except (ValueError, IndexError) as e:
+    except (ValueError, IndexError):
         print("Enter a digit corresponding to the published assignment.")
 
 def download_assignments(students, assignment):
