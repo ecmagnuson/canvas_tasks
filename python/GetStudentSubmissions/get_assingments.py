@@ -14,7 +14,7 @@ from canvasapi import Canvas, requester
 # https://github.com/ucfopen/canvasapi
 
 def validate():
-    with open("Auth.json") as f:
+    with open("Auth.json", "r") as f:
         d = json.load(f)
     try:
         API_URL = d["API_URL"]
@@ -63,6 +63,17 @@ def active_canvas_courses(canvas):
             pass       
     return current   
 
+def get_all_students(course):
+    # TODO no need to make my own dataclass..
+    all_students = []
+    students = course.get_users(
+        enrollment_type=["student"],
+        #enrollment_state=['active', 'invited']
+    )
+    for student in students:
+        all_students.append(Student(student.name, student.id))
+    return all_students
+
 def desired_section(course):
     #return a Section object corresponding to the user input
     sections = course.get_sections()
@@ -71,9 +82,15 @@ def desired_section(course):
     while True:
         try:
             print(f"\nWhat section of {course.name} do you want to get?")
-            choice = int(input("> "))
+            print("You can leave this blank if you want to get all sections.")
+            choice = input("> ")
             print()
-            return sections[choice]
+            if choice == "":
+                # No desired section
+                return None
+            else:
+                #choice = int(choice) # TODO this is a bit hacky
+                return sections[int(choice)]
         except (ValueError, IndexError):
             print("Enter a digit corresponding to the section")
 
@@ -118,19 +135,28 @@ def download_assignments(students, assignment):
     for i, student in enumerate(students, 1):
         try:
             file_name = str(assignment.get_submission(student.ID).attachments[0])
-            extension = file_name[file_name.index(".") : ]
-            submission_url = assignment.get_submission(student.ID).attachments[0].url
-            urllib.request.urlretrieve(submission_url, f"./submissions/{assignment_name}/{student.name}_{assignment_name}_graded{extension}")
-            print(f"downloading submission {i}", end = "\r")
         except (IndexError, requester.ResourceDoesNotExist):
+            sys.stdout.write("\033[K") # Clear to the end of line
             print(f"No submission from {student.name}")
+            continue
+        extension = file_name[file_name.index(".") : ]
+        submission_url = assignment.get_submission(student.ID).attachments[0].url
+        urllib.request.urlretrieve(submission_url, f"./submissions/{assignment_name}/{student.name}_{assignment_name}_graded{extension}")
+        print(f"downloading submission {i} of {len(students) - 1} students", end = "\r")
     print(f"Files have been downloaded to submissions/{assignment_name}")
 
 def main():
     canvas = validate()
     course = desired_course(canvas)
     section = desired_section(course)
-    students = populate_enrollment(section)
+
+    #TODO this is a bit janky..
+    try: #get students from one section
+        students = populate_enrollment(section)
+    except AttributeError:
+        #get students from all sections
+        students = get_all_students(course)
+    
     assignment = get_published_assignments(course)
     download_assignments(students, assignment)
 
