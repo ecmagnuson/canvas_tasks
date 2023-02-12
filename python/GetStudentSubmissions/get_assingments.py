@@ -19,11 +19,11 @@ class Student:
     ID: str
 
 def validate():
-    with open("data.json") as f:
+    with open("Auth.json") as f:
         d = json.load(f)
     try:
         API_URL = d["API_URL"]
-        API_KEY = d["API_KE"]
+        API_KEY = d["API_KEY"]
         return Canvas(API_URL, API_KEY)
     except KeyError:
         print('There was an error accessing the API_URL or API_KEY inside of the "Auth.json" file')
@@ -34,8 +34,11 @@ def validate():
 def desired_course(canvas):
     #return a Course object that the user picked
     courses = active_canvas_courses(canvas)
-    print(f"There are {len(courses)} courses in your current semester Canvas page.")
-    print("Which would you like to choose?\n")
+    print(f"There are {len(courses)} active courses in your Canvas page in which you are a teacher")
+    print("Which would you like to choose?")
+    print('''Note: Some old classes may be listed here. 
+        If they are, that means they are still listed as active under Canvas - 
+        which there is nothing I can do about\n''')
     for i, course in enumerate(courses):
         print(f"({i}) --" , course.name)
     try:
@@ -45,19 +48,22 @@ def desired_course(canvas):
         print("Enter a digit corresponding to the course")
 
 def active_canvas_courses(canvas):
-    #Returns a list of all active Canvas courses within desired semester
+    #return a list of all active Canvas courses which you are a ta or teacher
     current = []
     courses = canvas.get_courses()
+    types = ["teacher", "ta"]
     for course in courses:
         try:
-            # matches any two upper case letters with 2 numbers, i.e. FA22, SP23, etc.
-            match = re.search(r"[A-Z]{2}\d{2}", str(course))
-            if match is not None and match.group(0) == "SP23":  #TODO make this more automated for other semesters
-                current.append(course)
-            else:
-                raise AttributeError("It looks like you don't have any classes in the chosen semester``")
+            #TODO this is pretty ugly, but ok for now..
+            if ( 
+                course.enrollments[0]["enrollment_state"] == "active" 
+                and 
+                course.enrollments[0]["type"] in types
+            ):
+                current.append(course)    
         except AttributeError:
-            pass # weird issue with a course not having a name  
+            #There is a strange issue where old Canvas classes raise this error, idk why..
+            pass       
     return current   
 
 def desired_section(course):
@@ -73,7 +79,7 @@ def desired_section(course):
         print("Enter a digit corresponding to the section")
 
 def populate_enrollment(section):
-    # returns a list of Student objects (name, id) in the desired section
+    #return a list of Student objects (name, id) in the desired section
     students = []
     enrollments = section.get_enrollments()
     # TODO only get students that are enrolled
@@ -128,6 +134,7 @@ def main():
     students = populate_enrollment(section)
     assignment = get_published_assignments(course)
     download_assignments(students, assignment)
+    
     # TODO bug for students len because teachers 
     # TODO fix tell where it is being downloaded
     print(f"Finished :)")
