@@ -2,11 +2,14 @@
 
 import json
 import os
+import pathlib
 import sys
 import urllib.request
 
 from dataclasses import dataclass
 from canvasapi import Canvas, requester
+
+#TODO some assignments dont have submissions to them, can I still get them?
 
 # Docs
 # https://canvasapi.readthedocs.io/en/stable/index.html
@@ -38,6 +41,9 @@ def desired_course(canvas):
         try:
             print("\nWhich class would you like to choose?")
             choice = int(input("> "))
+            if choice < 0:
+                print("Negative course ehh?")
+                continue
             print()
             return courses[choice]
         except (ValueError, IndexError):
@@ -46,6 +52,7 @@ def desired_course(canvas):
 def active_canvas_courses(canvas):
     #return a list of all active Canvas courses which you are a ta or teacher
     current = []
+    # TODO change to a set not a list
     courses = canvas.get_courses()
     types = ["teacher", "ta"]
     for course in courses:
@@ -139,7 +146,9 @@ def download_assignments(students, assignment):
             sys.stdout.write("\033[K") # Clear to the end of line
             print(f"No submission from {student.name}")
             continue
-        extension = file_name[file_name.index(".") : ]
+        #TODO Fix this. Bug when . in file but not extension lol
+        #get the last . from the file not the first :O
+        extension = pathlib.Path(file_name).suffixes[-1] 
         submission_url = assignment.get_submission(student.ID).attachments[0].url
         urllib.request.urlretrieve(submission_url, f"./submissions/{assignment_name}/{student.name}_{assignment_name}_graded{extension}")
         print(f"downloading submission {i} of {len(students) - 1} students", end = "\r")
