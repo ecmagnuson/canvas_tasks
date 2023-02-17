@@ -159,12 +159,10 @@ def main():
     course = desired_course(canvas)
     section = desired_section(course)
 
-    #TODO this is a bit janky..
-    try: #get students from one section
-        students = populate_enrollment(section)
-    except AttributeError:
-        #get students from all sections
+    if section == None: #get students from all sections
         students = get_all_students(course)
+    else: #get students from one section
+        students = populate_enrollment(section)
     
     assignment = get_published_assignments(course)
     download_assignments(students, assignment)
