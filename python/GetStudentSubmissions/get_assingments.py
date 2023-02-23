@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from canvasapi import Canvas, requester
 
 #TODO some assignments dont have submissions to them, can I still get them?
+#TODO format name for all sections as well
 
 # Docs
 # https://canvasapi.readthedocs.io/en/stable/index.html
@@ -159,7 +160,7 @@ def main():
     course = desired_course(canvas)
     section = desired_section(course)
 
-    if section == None: #get students from all sections
+    if section is None: #get students from all sections
         students = get_all_students(course)
     else: #get students from one section
         students = populate_enrollment(section)
