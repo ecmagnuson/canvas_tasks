@@ -147,8 +147,6 @@ def download_assignments(students, assignment):
             sys.stdout.write("\033[K") # Clear to the end of line
             print(f"No submission from {student.name}")
             continue
-        #TODO Fix this. Bug when . in file but not extension lol
-        #get the last . from the file not the first :O
         extension = pathlib.Path(file_name).suffixes[-1] 
         submission_url = assignment.get_submission(student.ID).attachments[0].url
         urllib.request.urlretrieve(submission_url, f"./submissions/{assignment_name}/{student.name}_{assignment_name}_graded{extension}")
