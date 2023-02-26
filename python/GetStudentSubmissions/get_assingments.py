@@ -148,8 +148,9 @@ def download_assignments(students, assignment):
             print(f"No submission from {student.name}")
             continue
         extension = pathlib.Path(file_name).suffixes[-1] 
+        title = f"{assignment_name}/{student.name}_{assignment_name}_graded{extension}"
         submission_url = assignment.get_submission(student.ID).attachments[0].url
-        urllib.request.urlretrieve(submission_url, f"./submissions/{assignment_name}/{student.name}_{assignment_name}_graded{extension}")
+        urllib.request.urlretrieve(submission_url, f"./submissions/{title}")
         print(f"downloading submission {i} of {len(students) - 1} students", end = "\r")
     print(f"Files have been downloaded to submissions/{assignment_name}")
 
