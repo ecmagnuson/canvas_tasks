@@ -77,7 +77,7 @@ def get_all_students(course):
         #enrollment_state=['active', 'invited']
     )
     for student in students:
-        all_students.append(Student(student.name, student.id))
+        all_students.append(Student(student.name.title().replace(" ", ""), student.id))
     return all_students
 
 def desired_section(course):
@@ -126,8 +126,8 @@ def get_published_assignments(course):
         print(f"({i}) --" , assignment.name)
     while True:
         try:
-            print("Here are all of the published assignments to the class.")
-            print("\nWhat assignment do you want to download the files for?")
+            print("\nHere are all of the published assignments to the class.")
+            print("What assignment do you want to download the files for?")
             choice = int(input("> "))
             if choice < 0: continue
             return published_assignments[choice]
