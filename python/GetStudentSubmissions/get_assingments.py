@@ -152,7 +152,7 @@ def download_assignments(students, assignment):
         submission_url = assignment.get_submission(student.ID).attachments[0].url
         urllib.request.urlretrieve(submission_url, f"./submissions/{title}")
         print(f"downloading submission {i} of {len(students) - 1} students", end = "\r")
-    print(f"Files have been downloaded to submissions/{assignment_name}")
+    print(f"Files have been downloaded to {os.path.realpath(__file__)}/submissions/{assignment_name}")
 
 def main():
     canvas = validate()
