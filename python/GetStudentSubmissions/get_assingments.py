@@ -120,14 +120,16 @@ def get_published_assignments(course):
     #TODO this hangs for a bit
     assignments = course.get_assignments()
     print("Please wait. Sometimes this can hang for a little while.")
-    for i, assignment in enumerate(assignments):
-        if assignment.published:
-            print(f"({i}) --" , assignment.name)
+    published_assignments = []
+    [published_assignments.append(a) for a in assignments if a.published]
+    for i, assignment in enumerate(published_assignments):
+        print(f"({i}) --" , assignment.name)
     while True:
         try:
             print("\nWhat assignment do you want to download the files for?")
             choice = int(input("> "))
-            return assignments[choice]
+            if choice < 0: continue
+            return published_assignments[choice]
         except (ValueError, IndexError):
             print("Enter a digit corresponding to the published assignment.")
 
