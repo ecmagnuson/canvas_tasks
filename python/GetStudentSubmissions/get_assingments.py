@@ -35,16 +35,14 @@ def desired_course(canvas):
     courses = active_canvas_courses(canvas)
     print(f"There are {len(courses)} active courses in your Canvas page in which you are a teacher.")
     print('''Note: Some old classes may be listed here. 
-          If they are, that means they are still listed as active under Canvas. \n''')
+    If they are, that means they are still listed as active under Canvas.\n''')
     for i, course in enumerate(courses):
         print(f"({i}) --" , course.name)
     while True:
         try:
             print("\nWhich class would you like to choose?")
             choice = int(input("> "))
-            if choice < 0:
-                print("Negative course ehh?")
-                continue
+            if choice < 0: continue
             print()
             return courses[choice]
         except (ValueError, IndexError):
@@ -137,7 +135,6 @@ def download_assignments(students, assignment):
     #downloads assignments into ./submissions directory
     print("\nWhat do you want to call the name of the file for each student?")
     assignment_name = input("> ")
-    os.makedirs("./submissions", exist_ok=True)
     os.makedirs("./submissions/" + assignment_name, exist_ok=True)
     print()
     for i, student in enumerate(students, 1):
