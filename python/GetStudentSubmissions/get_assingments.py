@@ -3,6 +3,7 @@
 import json
 import os
 import pathlib
+import shutil
 import sys
 import urllib.request
 
@@ -77,7 +78,7 @@ def get_all_students(course):
         #enrollment_state=['active', 'invited']
     )
     for student in students:
-        all_students.append(Student(student.name.title().replace(" ", ""), student.id))
+        all_students.append(Student(student.name.title().replace(" ", ""), student.id, "TODO"))
     return all_students
 
 def desired_section(course):
@@ -104,16 +105,17 @@ def desired_section(course):
 class Student: 
     name: str
     ID: str
+    group: str
 
 def populate_enrollment(section):
-    #return a list of Student objects (name, id) in the desired section
+    #return a list of Student objects (name, id, group = "unassigned") in the desired section
     students = []
     enrollments = section.get_enrollments()
     for enrollment in enrollments:
         if enrollment.role == "StudentEnrollment":
             name = enrollment.user["name"].title().replace(" ", "")
             ID = enrollment.user["id"]
-            students.append(Student(name, ID))
+            students.append(Student(name, ID, "unassigned"))
     return students
 
 def get_published_assignments(course):
@@ -134,6 +136,15 @@ def get_published_assignments(course):
         except (ValueError, IndexError):
             print("Enter a digit corresponding to the published assignment.")
 
+def move_resources(student_dir):
+    #Move all of the resources in the resource directory into the student_dir
+    name = student_dir.split("/")[-1]
+    resources = os.listdir("./resources")
+    for r in resources:
+        #student_dir = ./submissions/DEI/Lab 3 Group 1/EllaAlbrecht
+        shutil.copyfile("./resources/" + r, student_dir + "/" + name + r)
+        #shutil.copyfile(f"{resources}/{r}", f"{student_dir}/{name}_{r}")
+
 def download_assignments(students, assignment):
     #downloads assignments into ./submissions directory
     print("\nWhat do you want to call the name of the file for each student?")
@@ -141,6 +152,10 @@ def download_assignments(students, assignment):
     os.makedirs("./submissions/" + assignment_name, exist_ok=True)
     print()
     for i, student in enumerate(students, 1):
+        group_dir = f"./submissions/{assignment_name}/{student.group}"
+        os.makedirs(group_dir, exist_ok=True)
+        student_dir = f"{group_dir}/{student.name}"
+        os.makedirs(student_dir, exist_ok=True)
         try:
             file_name = str(assignment.get_submission(student.ID).attachments[0])
         except (IndexError, requester.ResourceDoesNotExist):
@@ -148,24 +163,36 @@ def download_assignments(students, assignment):
             print(f"No submission from {student.name}")
             continue
         extension = pathlib.Path(file_name).suffixes[-1] 
-        title = f"{assignment_name}/{student.name}_{assignment_name}_graded{extension}"
+        title = f"{student_dir}/{student.name}_{assignment_name}_graded{extension}"
         submission_url = assignment.get_submission(student.ID).attachments[0].url
-        urllib.request.urlretrieve(submission_url, f"./submissions/{title}")
+        urllib.request.urlretrieve(submission_url, title)
+        move_resources(student_dir)
         print(f"downloading submission {i} of {len(students) - 1} students", end = "\r")
-    print(f"Files have been downloaded to {os.path.realpath(__file__)}/submissions/{assignment_name}")
+    print(f"Files have been downloaded to {os.path.dirname(os.path.abspath(__file__))}/submissions/{assignment_name}")
+    return f"{os.path.dirname(os.path.abspath(__file__))}/submissions/{assignment_name}"
+
+def add_groups(course, students):
+    #Adds the groups to the student objects
+    # TODO This is horrible inneficient
+    groups = course.get_groups()
+    for group in groups:
+        for member in group.get_memberships():
+            for student in students:
+                if student.ID == member.user_id:
+                    student.group = group.name
+    return students
 
 def main():
     canvas = validate()
     course = desired_course(canvas)
     section = desired_section(course)
-
     if section is None: #get students from all sections
         students = get_all_students(course)
     else: #get students from one section
         students = populate_enrollment(section)
-    
+    students = add_groups(course, students)
     assignment = get_published_assignments(course)
-    download_assignments(students, assignment)
+    submission_dir = download_assignments(students, assignment)
 
 if __name__ == "__main__":
     sys.exit(main())
