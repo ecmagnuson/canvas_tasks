@@ -172,21 +172,23 @@ def add_groups(course, students):
     # TODO This is horrible inneficient
     groups = course.get_groups()
     for group in groups:
-        for member in group.get_memberships():
+        for user in group.get_users():
             for student in students:
-                if student.ID == member.user_id:
+                if student.ID == user.id:
                     student.group = group.name
-    return students
+    return students 
 
 def main():
     canvas = validate()
     course = desired_course(canvas)
     section = desired_section(course)
+    
     print("Please wait. Sometimes this can hang for a little while.")
     if section is None: #get students from all sections
         students = get_all_students(course)
     else: #get students from one section
         students = populate_enrollment(section)
+    
     students = add_groups(course, students)
     assignment = get_published_assignments(course)
     download_assignments(students, assignment)
