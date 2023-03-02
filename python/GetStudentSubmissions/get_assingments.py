@@ -11,15 +11,9 @@ from dataclasses import dataclass
 from canvasapi import Canvas, requester
 
 #TODO some assignments dont have submissions to them, can I still get them?
-#TODO format name for all sections as well
-#TODO organize download for all section choice
-
-# Docs
-# https://canvasapi.readthedocs.io/en/stable/index.html
-# https://canvas.instructure.com/doc/api/index.html
-# https://github.com/ucfopen/canvasapi
 
 def validate():
+    #Validate the url and key and return a canvas object
     with open("Auth.json", "r") as f:
         d = json.load(f)
     try:
@@ -110,6 +104,7 @@ def get_section_students(section, all_students):
     return add_section_groups(all_students, section_students)
 
 def get_published_assignments(course):
+    #Return a list of assignments for the course that are published
     #TODO this hangs for a bit
     assignments = course.get_assignments()
     published_assignments = []
@@ -170,6 +165,7 @@ def get_course_students(course):
     return students
 
 def add_section_groups(all_students, section_students):
+    #Adds the group from all_setends to the section_students
     for s in section_students:
         for a in all_students:
             if s.name == a.name:
