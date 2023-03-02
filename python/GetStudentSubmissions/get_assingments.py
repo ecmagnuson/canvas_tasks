@@ -6,12 +6,13 @@ import pathlib
 import shutil
 import sys
 import urllib.request
-
 from dataclasses import dataclass
+
 from canvasapi import Canvas, requester
 
 #TODO some assignments dont have submissions to them, can I still get them?
 #TODO format name for all sections as well
+#TODO organize download for all section choice
 
 # Docs
 # https://canvasapi.readthedocs.io/en/stable/index.html
@@ -52,7 +53,6 @@ def desired_course(canvas):
 def active_canvas_courses(canvas):
     #return a list of all active Canvas courses which you are a ta or teacher
     current = []
-    # TODO change to a set not a list
     courses = canvas.get_courses()
     types = ["teacher", "ta"]
     for course in courses:
@@ -121,7 +121,6 @@ def populate_enrollment(section):
 def get_published_assignments(course):
     #TODO this hangs for a bit
     assignments = course.get_assignments()
-    print("Please wait. Sometimes this can hang for a little while.")
     published_assignments = []
     [published_assignments.append(a) for a in assignments if a.published]
     for i, assignment in enumerate(published_assignments):
@@ -141,9 +140,7 @@ def move_resources(student_dir):
     name = student_dir.split("/")[-1]
     resources = os.listdir("./resources")
     for r in resources:
-        #student_dir = ./submissions/DEI/Lab 3 Group 1/EllaAlbrecht
         shutil.copyfile("./resources/" + r, student_dir + "/" + name + r)
-        #shutil.copyfile(f"{resources}/{r}", f"{student_dir}/{name}_{r}")
 
 def download_assignments(students, assignment):
     #downloads assignments into ./submissions directory
@@ -169,7 +166,6 @@ def download_assignments(students, assignment):
         move_resources(student_dir)
         print(f"downloading submission {i} of {len(students) - 1} students", end = "\r")
     print(f"Files have been downloaded to {os.path.dirname(os.path.abspath(__file__))}/submissions/{assignment_name}")
-    return f"{os.path.dirname(os.path.abspath(__file__))}/submissions/{assignment_name}"
 
 def add_groups(course, students):
     #Adds the groups to the student objects
@@ -186,13 +182,14 @@ def main():
     canvas = validate()
     course = desired_course(canvas)
     section = desired_section(course)
+    print("Please wait. Sometimes this can hang for a little while.")
     if section is None: #get students from all sections
         students = get_all_students(course)
     else: #get students from one section
         students = populate_enrollment(section)
     students = add_groups(course, students)
     assignment = get_published_assignments(course)
-    submission_dir = download_assignments(students, assignment)
+    download_assignments(students, assignment)
 
 if __name__ == "__main__":
     sys.exit(main())
