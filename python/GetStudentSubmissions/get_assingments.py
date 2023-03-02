@@ -81,7 +81,7 @@ def get_all_students(course):
         all_students.append(Student(student.name.title().replace(" ", ""), student.id, "TODO"))
     return all_students
 
-def desired_section(course):
+def get_students_from_section(course):
     #return a Section object corresponding to the user input
     sections = course.get_sections()
     for i, section in enumerate(sections):
@@ -94,10 +94,9 @@ def desired_section(course):
             print()
             if choice == "":
                 # No desired section
-                return None
+                return get_all_students(course)
             else:
-                #choice = int(choice) # TODO this is a bit hacky
-                return sections[int(choice)]
+                return populate_enrollment(sections[int(choice)])
         except (ValueError, IndexError):
             print("Enter a digit corresponding to the section")
 
@@ -181,14 +180,8 @@ def add_groups(course, students):
 def main():
     canvas = validate()
     course = desired_course(canvas)
-    section = desired_section(course)
-    
+    students = get_students_from_section(course)
     print("Please wait. Sometimes this can hang for a little while.")
-    if section is None: #get students from all sections
-        students = get_all_students(course)
-    else: #get students from one section
-        students = populate_enrollment(section)
-    
     students = add_groups(course, students)
     assignment = get_published_assignments(course)
     download_assignments(students, assignment)
