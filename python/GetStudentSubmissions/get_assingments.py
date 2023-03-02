@@ -152,7 +152,26 @@ def download_assignments(students, assignment):
         submission_url = assignment.get_submission(student.ID).attachments[0].url
         urllib.request.urlretrieve(submission_url, f"./submissions/{title}")
         print(f"downloading submission {i} of {len(students) - 1} students", end = "\r")
-    print(f"Files have been downloaded to {os.path.realpath(__file__)}/submissions/{assignment_name}")
+    print(f"Files have been downloaded to {os.path.dirname(os.path.abspath(__file__))}/submissions/{assignment_name}")
+    return f"{os.path.dirname(os.path.abspath(__file__))}/submissions/{assignment_name}"
+
+def check_using_pyinstaller():
+    if getattr(sys, 'frozen', False):
+        print('Using PyInstaller executable.')
+        application_path = os.path.dirname(sys.executable)
+        return application_path
+    return os.path.dirname(os.path.abspath(__file__))
+
+def get_students():
+    with open(check_using_pyinstaller() + '/resources/students.txt', 'r') as f:
+        return f.readlines()
+
+def read_submissions(submission_dir):
+    submission = os.listdir(submission_dir)
+    submissions = []
+    for s in submission:
+        submissions.append(s)
+    return submissions
 
 def main():
     canvas = validate()
@@ -165,7 +184,44 @@ def main():
         students = populate_enrollment(section)
     
     assignment = get_published_assignments(course)
-    download_assignments(students, assignment)
+    submission_dir = download_assignments(students, assignment)
+
+    student_files = read_submissions(submission_dir)
+    studs = get_students()
+
+    group = 1
+    #naive and complicated way to do this. fix later
+
+    for s in studs:
+        for sf in student_files:
+            student_name = sf.split("_")[0]
+            extension = pathlib.Path(sf).suffixes[-1] 
+
+
+'''  
+	group := 1
+	//naive and complicated way to do this, fix later
+	for _, student := range students {
+		for _, submission := range submissions {
+			studentName := strings.Split(submission, "_")[0]
+			if studentName == student {
+				extension := filepath.Ext(submission)
+				groupDir := "../output/submissions/" + "Group" + strconv.Itoa(group) + "/"
+				studentDir := groupDir + studentName
+				makeDir(studentDir)
+				copyFile("../resources/submissions/"+submission, studentDir+"/"+studentName+assignment+extension)
+				copyFile("../resources/TAComments", studentDir+"/"+studentName+"TAComments")
+			}
+		}
+		if student == "" || student == "\r" {
+			group++
+		}
+	}
+
+'''
+
+
+
 
 if __name__ == "__main__":
     sys.exit(main())
