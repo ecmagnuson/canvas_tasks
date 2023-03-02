@@ -32,7 +32,7 @@ def validate():
         print('"https://canvas.wisc.edu/"')
         sys.exit(1)
 
-def desired_course(canvas):
+def get_a_course(canvas):
     #return a Course object that the user picked
     courses = active_canvas_courses(canvas)
     print(f"There are {len(courses)} active courses in your Canvas page in which you are a teacher.")
@@ -70,18 +70,7 @@ def active_canvas_courses(canvas):
             pass       
     return current   
 
-def get_all_students(course):
-    # TODO no need to make my own dataclass..
-    all_students = []
-    students = course.get_users(
-        enrollment_type=["student"],
-        #enrollment_state=['active', 'invited']
-    )
-    for student in students:
-        all_students.append(Student(student.name.title().replace(" ", ""), student.id, "TODO"))
-    return all_students
-
-def desired_section(course):
+def get_course_section(course):
     #return a Section object corresponding to the user input
     sections = course.get_sections()
     for i, section in enumerate(sections):
@@ -107,16 +96,18 @@ class Student:
     ID: str
     group: str
 
-def populate_enrollment(section):
+def get_section_students(section, all_students):
     #return a list of Student objects (name, id, group = "unassigned") in the desired section
-    students = []
+    section_students = []
+    if section == None:
+        return all_students
     enrollments = section.get_enrollments()
     for enrollment in enrollments:
         if enrollment.role == "StudentEnrollment":
             name = enrollment.user["name"].title().replace(" ", "")
             ID = enrollment.user["id"]
-            students.append(Student(name, ID, "unassigned"))
-    return students
+            section_students.append(Student(name, ID, "unassigned"))
+    return add_section_groups(all_students, section_students)
 
 def get_published_assignments(course):
     #TODO this hangs for a bit
@@ -167,31 +158,32 @@ def download_assignments(students, assignment):
         print(f"downloading submission {i} of {len(students) - 1} students", end = "\r")
     print(f"Files have been downloaded to {os.path.dirname(os.path.abspath(__file__))}/submissions/{assignment_name}")
 
-def add_groups(course, students):
-    #Adds the groups to the student objects
-    # TODO This is horrible inneficient
+def get_course_students(course):
+    #reurn a list of all Student(name, id, group) in a course
+    print("Collecting students..")
+    students = []
     groups = course.get_groups()
     for group in groups:
         for user in group.get_users():
-            for student in students:
-                if student.ID == user.id:
-                    student.group = group.name
-    return students 
+            name = user.name.title().replace(" ", "")
+            students.append(Student(name, user.id, group.name))
+    return students
+
+def add_section_groups(all_students, section_students):
+    for s in section_students:
+        for a in all_students:
+            if s.name == a.name:
+                s.group = a.group
+    return section_students
 
 def main():
     canvas = validate()
-    course = desired_course(canvas)
-    section = desired_section(course)
-    
-    print("Please wait. Sometimes this can hang for a little while.")
-    if section is None: #get students from all sections
-        students = get_all_students(course)
-    else: #get students from one section
-        students = populate_enrollment(section)
-    
-    students = add_groups(course, students)
+    course = get_a_course(canvas)
+    all_students = get_course_students(course)
+    section = get_course_section(course)
+    section_students = get_section_students(section, all_students)
     assignment = get_published_assignments(course)
-    download_assignments(students, assignment)
+    download_assignments(section_students, assignment)
 
 if __name__ == "__main__":
     sys.exit(main())
