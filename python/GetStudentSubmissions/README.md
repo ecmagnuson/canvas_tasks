@@ -2,7 +2,7 @@
 
 1. In Auth.json set your API_URL accordingly:
 	- API_URL is your url for Canvas
-	- i.e. https://canvas.wisc.edu/
+	- i.e. "https://canvas.wisc.edu/"
 	
 2. In Auth.json set your API_KEY accordingly:
 	- On the left hand side of your Canvas home page:
@@ -13,6 +13,8 @@
  	- Generate token
 	 	+ It will be a long string of characters
  	- Copy down the token and put it into Auth.json API_KEY
+	- i.e. : "8dj2j3j5k4k399dkdmkdmslsldfkjsdflsdfl"
+	- Keep the quotes in Auth.json
  	
 3. Any file that you place into the `resources` directory will be copied into each students assignment, so if you have any sort of rubric or feedback sheet you can place it there.
 4. Run the program and it will guide you through the process inside of a terminal.
