@@ -124,9 +124,12 @@ def get_published_assignments(course):
 def move_resources(student_dir):
     #Move all of the resources in the resource directory into the student_dir
     name = student_dir.split("/")[-1]
-    resources = os.listdir("./resources")
-    for r in resources:
-        shutil.copyfile("./resources/" + r, student_dir + "/" + name + r)
+    try:
+        resources = os.listdir("./resources")
+        for r in resources:
+            shutil.copyfile("./resources/" + r, student_dir + "/" + name + r)
+    except FileNotFoundError:
+        return 
 
 def download_assignments(students, assignment):
     #downloads assignments into ./submissions directory
