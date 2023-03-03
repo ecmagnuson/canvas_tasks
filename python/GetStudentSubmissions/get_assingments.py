@@ -10,6 +10,8 @@ from dataclasses import dataclass
 
 from canvasapi import Canvas, requester
 
+#TODO multiple submissions
+#TODO pyinstaller file location
 #TODO some assignments dont have submissions to them, can I still get them?
 
 def validate():
