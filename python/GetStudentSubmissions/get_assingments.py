@@ -91,7 +91,7 @@ class Student:
     group: str
 
 def get_section_students(section, all_students):
-    #return a list of Student objects (name, id, group = "unassigned") in the desired section
+    #return a list of Student objects (name, id, group) in the desired section
     section_students = []
     if section == None:
         return all_students
