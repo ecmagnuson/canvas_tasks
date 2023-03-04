@@ -133,29 +133,41 @@ def move_resources(student_dir):
     except FileNotFoundError:
         return 
 
+def prepare_directory(student, assignment_name):
+    #TODO quick rework.. refactor this
+    group_dir = f"./submissions/{assignment_name}/{student.group}"
+    os.makedirs(group_dir, exist_ok=True)
+    student_dir = f"{group_dir}/{student.name}"
+    os.makedirs(student_dir, exist_ok=True)
+    move_resources(student_dir)
+    return student_dir
+
 def download_assignments(students, assignment):
     #downloads assignments into ./submissions directory
     print("\nWhat do you want to call the name of the file for each student?")
     assignment_name = input("> ")
     os.makedirs("./submissions/" + assignment_name, exist_ok=True)
     print()
-    for i, student in enumerate(students, 1):
-        group_dir = f"./submissions/{assignment_name}/{student.group}"
-        os.makedirs(group_dir, exist_ok=True)
-        student_dir = f"{group_dir}/{student.name}"
-        os.makedirs(student_dir, exist_ok=True)
-        try:
-            file_name = str(assignment.get_submission(student.ID).attachments[0])
-        except (IndexError, requester.ResourceDoesNotExist):
-            sys.stdout.write("\033[K") # Clear to the end of line
-            print(f"No submission from {student.name}")
+    for i, student in enumerate(students):
+        student_dir = prepare_directory(student, assignment_name)
+        submissions = assignment.get_submission(student.ID).attachments
+        if len(submissions) == 0:
+            print(f"No submission from {student.name}\n")
             continue
-        extension = pathlib.Path(file_name).suffixes[-1] 
-        title = f"{student_dir}/{student.name}_{assignment_name}{extension}"
-        submission_url = assignment.get_submission(student.ID).attachments[0].url
-        urllib.request.urlretrieve(submission_url, title)
-        move_resources(student_dir)
+        if len(submissions) == 1:
+            #print(str(submissions)[0])
+            extension = pathlib.Path(str(submissions[0])).suffixes[-1] 
+            title = f"{student_dir}/{student.name}_{assignment_name}{extension}"
+            urllib.request.urlretrieve(submissions[0].url, title)
+        else:
+            print(f"{student.name} appears to have {len(submissions)} submissions for this assignment")
+            print("Defaulting to original student file names..\n")
+            for i, sub in enumerate(submissions):
+                extension = pathlib.Path(str(sub)).suffixes[-1] 
+                title = f"{student_dir}/{student.name}_{str(sub)}{extension}"
+                urllib.request.urlretrieve(sub.url, title)
         print(f"downloading submission {i} of {len(students) - 1} students", end = "\r")
+        sys.stdout.write("\033[K") # Clear to the end of line
     print(f"Files have been downloaded to {os.path.dirname(os.path.abspath(__file__))}/submissions/{assignment_name}")
 
 def get_course_students(course):
