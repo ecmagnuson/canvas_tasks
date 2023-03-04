@@ -168,7 +168,7 @@ def download_assignments(students, assignment):
                 urllib.request.urlretrieve(sub.url, title)
         print(f"downloading submission {i} of {len(students) - 1} students", end = "\r")
         sys.stdout.write("\033[K") # Clear to the end of line
-    print(f"Files have been downloaded to {os.path.dirname(os.path.abspath(__file__))}/submissions/{assignment_name}")
+    print(f"Files have been downloaded to {check_using_pyinstaller()}/submissions/{assignment_name}")
 
 def get_course_students(course):
     #reurn a list of all Student(name, id, group) in a course
@@ -188,6 +188,13 @@ def add_section_groups(all_students, section_students):
             if s.name == a.name:
                 s.group = a.group
     return section_students
+
+def check_using_pyinstaller():
+    #return the current location script is executing from
+    if getattr(sys, 'frozen', False):
+        application_path = os.path.dirname(sys.executable)
+        return application_path
+    return os.path.dirname(os.path.abspath(__file__))
 
 def main():
     canvas = validate()
