@@ -148,12 +148,12 @@ def download_assignments(students, assignment):
     assignment_name = input("> ")
     os.makedirs("./submissions/" + assignment_name, exist_ok=True)
     print()
-    for i, student in enumerate(students):
-        student_dir = prepare_directory(student, assignment_name)
+    for i, student in enumerate(students, 1):
         submissions = assignment.get_submission(student.ID).attachments
         if len(submissions) == 0:
             print(f"No submission from {student.name}\n")
             continue
+        student_dir = prepare_directory(student, assignment_name)
         if len(submissions) == 1:
             #print(str(submissions)[0])
             extension = pathlib.Path(str(submissions[0])).suffixes[-1] 
@@ -164,7 +164,7 @@ def download_assignments(students, assignment):
             print("Defaulting to original student file names..\n")
             for i, sub in enumerate(submissions):
                 extension = pathlib.Path(str(sub)).suffixes[-1] 
-                title = f"{student_dir}/{student.name}_{str(sub)}{extension}"
+                title = f"{student_dir}/{student.name}_{str(sub)}"
                 urllib.request.urlretrieve(sub.url, title)
         print(f"downloading submission {i} of {len(students) - 1} students", end = "\r")
         sys.stdout.write("\033[K") # Clear to the end of line
