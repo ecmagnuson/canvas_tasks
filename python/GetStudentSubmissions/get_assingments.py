@@ -84,22 +84,33 @@ def get_course_section(course):
         except (ValueError, IndexError):
             print("Enter a digit corresponding to the section")
 
+def group_id2name(course):
+    d = {}
+    for group in course.get_groups():
+        d[group.id] = group.name
+    return d
+
 @dataclass
 class Student: 
     name: str
     ID: str
     group: str
 
-def get_section_students(section):
-    #return a list of Student objects (name, id, group) in the desired section
+def get_section_students(section, groups):
+    #return a list of Student objects (name, id, group_name) in the desired section
     section_students = []
     enrollments = section.get_enrollments(include='group_ids')
     for enrollment in enrollments:
         if enrollment.role == "StudentEnrollment":
             name = enrollment.user["name"].title().replace(" ", "")
             ID = enrollment.user["id"]
-            group = enrollment.user["group_ids"]
-            section_students.append(Student(name, ID, group))
+            group_ID = enrollment.user["group_ids"]
+            try:
+                group_name = groups[(group_ID[0])]
+            except IndexError:
+                section_students.append(Student(name, ID, "unassigned_group"))
+                continue
+            section_students.append(Student(name, ID, group_name))
     return section_students
 
 def get_published_assignments(course):
@@ -139,7 +150,7 @@ def prepare_directory(student, assignment_name):
     move_resources(student_dir)
     return student_dir
 
-def download_assignments(students, assignment):
+def download_submissions(students, assignment):
     #downloads assignments into ./submissions directory
     print("\nWhat do you want to call the name of the file for each student?")
     assignment_name = input("> ")
@@ -178,10 +189,11 @@ def check_using_pyinstaller():
 def main():
     canvas = validate()
     course = get_a_course(canvas)
+    id2name = group_id2name(course)
     section = get_course_section(course)
-    section_students = get_section_students(section)
+    section_students = get_section_students(section, id2name)
     assignment = get_published_assignments(course)
-    download_assignments(section_students, assignment)
+    download_submissions(section_students, assignment)
 
 if __name__ == "__main__":
     sys.exit(main())
