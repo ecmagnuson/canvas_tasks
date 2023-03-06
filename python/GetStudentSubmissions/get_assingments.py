@@ -8,10 +8,8 @@ import sys
 import urllib.request
 from dataclasses import dataclass
 
-from canvasapi import Canvas, requester
+from canvasapi import Canvas
 
-#TODO multiple submissions
-#TODO pyinstaller file location
 #TODO some assignments dont have submissions to them, can I still get them?
 
 def validate():
@@ -92,18 +90,17 @@ class Student:
     ID: str
     group: str
 
-def get_section_students(section, all_students):
+def get_section_students(section):
     #return a list of Student objects (name, id, group) in the desired section
     section_students = []
-    if section == None:
-        return all_students
-    enrollments = section.get_enrollments()
+    enrollments = section.get_enrollments(include='group_ids')
     for enrollment in enrollments:
         if enrollment.role == "StudentEnrollment":
             name = enrollment.user["name"].title().replace(" ", "")
             ID = enrollment.user["id"]
-            section_students.append(Student(name, ID, "unassigned"))
-    return add_section_groups(all_students, section_students)
+            group = enrollment.user["group_ids"]
+            section_students.append(Student(name, ID, group))
+    return section_students
 
 def get_published_assignments(course):
     #Return a list of assignments for the course that are published
@@ -168,26 +165,8 @@ def download_assignments(students, assignment):
                 urllib.request.urlretrieve(sub.url, title)
         print(f"downloading submission {i} of {len(students) - 1} students", end = "\r")
         sys.stdout.write("\033[K") # Clear to the end of line
-    print(f"Files have been downloaded to {check_using_pyinstaller()}/submissions/{assignment_name}")
-
-def get_course_students(course):
-    #reurn a list of all Student(name, id, group) in a course
-    print("Collecting students..")
-    students = []
-    groups = course.get_groups()
-    for group in groups:
-        for user in group.get_users():
-            name = user.name.title().replace(" ", "")
-            students.append(Student(name, user.id, group.name))
-    return students
-
-def add_section_groups(all_students, section_students):
-    #Adds the group from all_setends to the section_students
-    for s in section_students:
-        for a in all_students:
-            if s.name == a.name:
-                s.group = a.group
-    return section_students
+    path = os.path.join(check_using_pyinstaller(), "submissions", assignment_name)
+    print(f"Files have been downloaded to {path}")
 
 def check_using_pyinstaller():
     #return the current location script is executing from
@@ -199,9 +178,8 @@ def check_using_pyinstaller():
 def main():
     canvas = validate()
     course = get_a_course(canvas)
-    all_students = get_course_students(course)
     section = get_course_section(course)
-    section_students = get_section_students(section, all_students)
+    section_students = get_section_students(section)
     assignment = get_published_assignments(course)
     download_assignments(section_students, assignment)
 
