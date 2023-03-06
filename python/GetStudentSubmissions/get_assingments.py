@@ -170,7 +170,7 @@ def download_submissions(students, assignment):
         else:
             print(f"{student.name} appears to have {len(submissions)} submissions for this assignment")
             print("Defaulting to original student file names..\n")
-            for i, sub in enumerate(submissions):
+            for sub in submissions:
                 extension = pathlib.Path(str(sub)).suffixes[-1] 
                 title = f"{student_dir}/{student.name}_{str(sub)}"
                 urllib.request.urlretrieve(sub.url, title)
